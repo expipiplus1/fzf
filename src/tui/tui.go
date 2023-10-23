@@ -55,6 +55,14 @@ const (
 	DoubleClick
 	LeftClick
 	RightClick
+	SLeftClick
+	SRightClick
+	ScrollUp
+	ScrollDown
+	SScrollUp
+	SScrollDown
+	PreviewScrollUp
+	PreviewScrollDown
 
 	BTab
 	BSpace
@@ -465,6 +473,13 @@ func MakeTransparentBorder() BorderStyle {
 		bottomRight: ' '}
 }
 
+type termSize struct {
+	Lines   int
+	Columns int
+	Width   int
+	Height  int
+}
+
 type Renderer interface {
 	Init()
 	Resize(maxHeightFunc func(int) int)
@@ -474,12 +489,15 @@ type Renderer interface {
 	RefreshWindows(windows []Window)
 	Refresh()
 	Close()
+	PassThrough(string)
 	NeedScrollbarRedraw() bool
 
 	GetChar() Event
 
 	MaxX() int
 	MaxY() int
+
+	Size() (termSize, error)
 
 	NewWindow(top int, left int, width int, height int, preview bool, borderStyle BorderStyle) Window
 }
@@ -490,6 +508,7 @@ type Window interface {
 	Width() int
 	Height() int
 
+	DrawBorder()
 	DrawHBorder()
 	Refresh()
 	FinishFill()

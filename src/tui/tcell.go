@@ -98,6 +98,11 @@ const (
 	AttrClear     = Attr(1 << 8)
 )
 
+func (r *FullscreenRenderer) PassThrough(str string) {
+	// No-op
+	// https://github.com/gdamore/tcell/issues/363#issuecomment-680665073
+}
+
 func (r *FullscreenRenderer) Resize(maxHeightFunc func(int) int) {}
 
 func (r *FullscreenRenderer) defaultTheme() *ColorTheme {
@@ -196,6 +201,11 @@ func (r *FullscreenRenderer) NeedScrollbarRedraw() bool {
 
 func (r *FullscreenRenderer) Refresh() {
 	// noop
+}
+
+func (r *FullscreenRenderer) Size() (termSize, error) {
+	cols, lines := _screen.Size()
+	return termSize{lines, cols, 0, 0}, error("Not implemented")
 }
 
 func (r *FullscreenRenderer) GetChar() Event {
@@ -536,6 +546,7 @@ func fill(x, y, w, h int, n ColorPair, r rune) {
 }
 
 func (w *TcellWindow) Erase() {
+	w.drawBorder(false)
 	fill(w.left-1, w.top, w.width+1, w.height-1, w.normal, ' ')
 }
 
@@ -685,6 +696,10 @@ func (w *TcellWindow) CFill(fg Color, bg Color, a Attr, str string) FillReturn {
 		bg = w.normal.Bg()
 	}
 	return w.fillString(str, NewColorPair(fg, bg, a))
+}
+
+func (w *TcellWindow) DrawBorder() {
+	w.drawBorder(false)
 }
 
 func (w *TcellWindow) DrawHBorder() {

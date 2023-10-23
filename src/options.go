@@ -125,6 +125,7 @@ const usage = `usage: fzf [options]
     FZF_DEFAULT_COMMAND    Default command to use when input is tty
     FZF_DEFAULT_OPTS       Default options
                            (e.g. '--layout=reverse --inline-info')
+    FZF_API_KEY            X-API-Key header for HTTP server (--listen)
 
 `
 
@@ -218,6 +219,7 @@ type previewOpts struct {
 	scroll      string
 	hidden      bool
 	wrap        bool
+	clear       bool
 	cycle       bool
 	follow      bool
 	border      tui.BorderShape
@@ -339,7 +341,7 @@ type Options struct {
 }
 
 func defaultPreviewOpts(command string) previewOpts {
-	return previewOpts{command, posRight, sizeSpec{50, true}, "", false, false, false, false, tui.DefaultBorderShape, 0, 0, nil}
+	return previewOpts{command, posRight, sizeSpec{50, true}, "", false, false, false, false, false, tui.DefaultBorderShape, 0, 0, nil}
 }
 
 func defaultOptions() *Options {
@@ -701,8 +703,24 @@ func parseKeyChordsImpl(str string, message string, exit func(string)) map[tui.E
 			add(tui.LeftClick)
 		case "right-click":
 			add(tui.RightClick)
+		case "shift-left-click":
+			add(tui.SLeftClick)
+		case "shift-right-click":
+			add(tui.SRightClick)
 		case "double-click":
 			add(tui.DoubleClick)
+		case "scroll-up":
+			add(tui.ScrollUp)
+		case "scroll-down":
+			add(tui.ScrollDown)
+		case "shift-scroll-up":
+			add(tui.SScrollUp)
+		case "shift-scroll-down":
+			add(tui.SScrollDown)
+		case "preview-scroll-up":
+			add(tui.PreviewScrollUp)
+		case "preview-scroll-down":
+			add(tui.PreviewScrollDown)
 		case "f10":
 			add(tui.F10)
 		case "f11":
@@ -1114,6 +1132,8 @@ func parseActionList(masked string, original string, prevActions []*action, putA
 			appendAction(actToggleSearch)
 		case "toggle-track":
 			appendAction(actToggleTrack)
+		case "toggle-header":
+			appendAction(actToggleHeader)
 		case "track":
 			appendAction(actTrack)
 		case "select":
@@ -1160,6 +1180,10 @@ func parseActionList(masked string, original string, prevActions []*action, putA
 			appendAction(actTogglePreviewWrap)
 		case "toggle-sort":
 			appendAction(actToggleSort)
+		case "offset-up":
+			appendAction(actOffsetUp)
+		case "offset-down":
+			appendAction(actOffsetDown)
 		case "preview-top":
 			appendAction(actPreviewTop)
 		case "preview-bottom":
@@ -1431,6 +1455,10 @@ func parsePreviewWindowImpl(opts *previewOpts, input string, exit func(string)) 
 			opts.wrap = true
 		case "nowrap":
 			opts.wrap = false
+		case "clear":
+			opts.clear = true
+		case "noclear":
+			opts.clear = false
 		case "cycle":
 			opts.cycle = true
 		case "nocycle":
@@ -1765,7 +1793,7 @@ func parseOptions(opts *Options, allArgs []string) {
 			opts.Preview.command = ""
 		case "--preview-window":
 			parsePreviewWindow(&opts.Preview,
-				nextString(allArgs, &i, "preview window layout required: [up|down|left|right][,SIZE[%]][,border-BORDER_OPT][,wrap][,cycle][,hidden][,+SCROLL[OFFSETS][/DENOM]][,~HEADER_LINES][,default]"))
+				nextString(allArgs, &i, "preview window layout required: [up|down|left|right][,SIZE[%]][,border-BORDER_OPT][,wrap][,clear][,cycle][,hidden][,+SCROLL[OFFSETS][/DENOM]][,~HEADER_LINES][,default]"))
 		case "--height":
 			opts.Height = parseHeight(nextString(allArgs, &i, "height required: [~]HEIGHT[%]"))
 		case "--min-height":

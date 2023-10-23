@@ -31,6 +31,11 @@ const consoleDevice string = "/dev/tty"
 var offsetRegexp *regexp.Regexp = regexp.MustCompile("(.*)\x1b\\[([0-9]+);([0-9]+)R")
 var offsetRegexpBegin *regexp.Regexp = regexp.MustCompile("^\x1b\\[[0-9]+;[0-9]+R")
 
+func (r *LightRenderer) PassThrough(str string) {
+	r.queued.WriteString("\x1b7" + str + "\x1b8")
+	r.flush()
+}
+
 func (r *LightRenderer) stderr(str string) {
 	r.stderrInternal(str, true, "")
 }
@@ -751,6 +756,10 @@ func (r *LightRenderer) NewWindow(top int, left int, width int, height int, prev
 	return w
 }
 
+func (w *LightWindow) DrawBorder() {
+	w.drawBorder(false)
+}
+
 func (w *LightWindow) DrawHBorder() {
 	w.drawBorder(true)
 }
@@ -1090,7 +1099,8 @@ func (w *LightWindow) FinishFill() {
 }
 
 func (w *LightWindow) Erase() {
-	w.drawBorder(false)
-	// We don't erase the window here to avoid flickering during scroll
+	w.DrawBorder()
+	w.Move(0, 0)
+	w.FinishFill()
 	w.Move(0, 0)
 }
