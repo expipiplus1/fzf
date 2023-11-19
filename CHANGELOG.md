@@ -1,29 +1,37 @@
 CHANGELOG
 =========
 
-0.43.1
+0.44.0
 ------
-- (Experimental) Added support for Sixel graphics in the preview window
+- (Experimental) Sixel image support in preview window (not available on Windows)
+    - [bin/fzf-preview.sh](bin/fzf-preview.sh) is added to demonstrate how to
+      display an image using Kitty image protocol or Sixel. You can use it
+      like so:
+      ```sh
+      fzf --preview='fzf-preview.sh {}'
+      ```
+- (Experimental) iTerm2 inline image protocol support in preview window (not available on Windows)
   ```sh
-  # 1. $FZF_PREVIEW_WIDTH and $FZF_PREVIEW_HEIGHT will be set to the pixel width
-  #    and height of the preview window
-  # 2. Special preview window flag 'clear' is added to always completely
-  #    erase the preview window. This is similar to https://github.com/vifm/vifm/issues/588.
-  fzf --preview='
-    if file --mime-type {} | grep -qvF image/; then
-      bat --color=always {}
-    elif [[ -n $FZF_PREVIEW_WIDTH ]]; then
-      convert {} -resize ${FZF_PREVIEW_WIDTH}x${FZF_PREVIEW_HEIGHT} sixel:-
-    else
-      echo "Cannot display image data (unsupported platform)"
-    fi
-  ' --preview-window clear
+  # Using https://iterm2.com/utilities/imgcat
+  fzf --preview 'imgcat -W $FZF_PREVIEW_COLUMNS -H $FZF_PREVIEW_LINES {}'
   ```
+- HTTP server can be configured to accept remote connections
+  ```sh
+  # FZF_API_KEY is required for a non-localhost listen address
+  export FZF_API_KEY="$(head -c 32 /dev/urandom | base64)"
+  fzf --listen 0.0.0.0:6266
+  ```
+    - To allow remote process execution, use `--listen-unsafe` instead
+      (`execute*`, `reload*`, `become`, `preview`, `change-preview`, `transform-*`)
+      ```sh
+      fzf --listen-unsafe 0.0.0.0:6266
+      ```
 - Bug fixes
 
 0.43.0
 ------
 - (Experimental) Added support for Kitty image protocol in the preview window
+  (not available on Windows)
   ```sh
   fzf --preview='
     if file --mime-type {} | grep -qF image/; then

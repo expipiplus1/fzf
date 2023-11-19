@@ -473,11 +473,11 @@ func MakeTransparentBorder() BorderStyle {
 		bottomRight: ' '}
 }
 
-type termSize struct {
-	Lines   int
-	Columns int
-	Width   int
-	Height  int
+type TermSize struct {
+	Lines    int
+	Columns  int
+	PxWidth  int
+	PxHeight int
 }
 
 type Renderer interface {
@@ -494,10 +494,11 @@ type Renderer interface {
 
 	GetChar() Event
 
+	Top() int
 	MaxX() int
 	MaxY() int
 
-	Size() (termSize, error)
+	Size() TermSize
 
 	NewWindow(top int, left int, width int, height int, preview bool, borderStyle BorderStyle) Window
 }
@@ -525,6 +526,7 @@ type Window interface {
 	Fill(text string) FillReturn
 	CFill(fg Color, bg Color, attr Attr, text string) FillReturn
 	Erase()
+	EraseMaybe() bool
 }
 
 type FullscreenRenderer struct {
